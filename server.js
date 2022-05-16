@@ -55,7 +55,7 @@ const initialPrompt = () =>
             case 'Add an Employee':
                 addEmployee();
                 break;
-            case 'Update an Employee':
+            case 'Update an Employee Role':
                 updateEmployee();
                 break;
             case 'Exit':
@@ -197,7 +197,7 @@ const addRole = () => {
         })
 };
 
-// Role array to get list of roles for adding an employee
+// Role array to get list of roles for adding an employee or updating an employee
 let roleArray = [];
 const roleSelect = () => {
     db.query(`SELECT * FROM roles`, (err, res) => {
@@ -289,3 +289,61 @@ const addEmployee = () => {
             })
         })
 };
+
+// Employee array to get list of employees for updating an employee
+let employeeArray = [];
+const employeeSelect = () => {
+    db.query(`SELECT * FROM employee`, (err, res) => {
+        if (err) {
+            console.error(err);
+        }
+        // for loop to add new managers to the managers array
+        for (let i = 0; res.length; i++) {
+            employeeArray.push(`${res[i].first_name} ${res[i].last_name}`);
+        }
+    })
+    return employeeArray;
+};
+
+// Update an employee role function
+const updateEmployee = () => {
+    inquirer
+        .prompt([
+            {
+                type: 'list',
+                name: 'employee',
+                message: 'Select an employee to update: ',
+                choices: employeeSelect()
+            },
+            {
+                type: 'list',
+                name: 'role',
+                message: 'Select the employees new role: ',
+                choices: roleSelect()
+            }
+        ]).then((response) => {
+            let roleID;
+            let employeeName = response.employee.split(' ');
+
+            db.query(`SELECT (id) FROM roles WHERE title = ?`, response.role, (err, res) => {
+                if (err) {
+                    console.error(err);
+                } else {
+                    roleID = res[0].id
+                }
+                updateE()
+            })
+
+            const updateE = () => {
+                db.query(`UPDATE employee SET role_id = ? WHERE first_name = ? AND last_name = ?`, {role_id: roleID, first_name: employeeName[0], last_name: employeeName[1]}, (err, res) => {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                        console.table(response);
+                        console.log('Employee updated successfully!');
+                    }
+                    initialPrompt();
+                })
+            }
+        })
+}
