@@ -138,3 +138,61 @@ const addDepartment = () => {
             initialPrompt();
         })
 }
+
+// Department array to get list of departments for adding a role
+let deptArray = [];
+const departmentSelect = () => {
+    db.query(`SELECT * FROM department`, (err, res) => {
+        if (err) {
+            console.error(err);
+        }
+        // for loop to add new departments to the department array
+        for (let i = 0; res.length; i++) {
+            deptArray.push(res[i].name);
+        }
+    })
+    return deptArray;
+}
+
+// Add a role function
+const addRole = () => {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                name: 'title',
+                message: 'What role do you want to add?'
+            },
+            {
+                type: 'input',
+                name: 'salary',
+                message: 'What is the employee salary for this role?'
+            },
+            {
+                type: 'list',
+                name: 'department',
+                message: 'What department will this role be under?',
+                choices: departmentSelect()
+            }
+        ])
+        .then((response) => {
+            let department_id;
+            db.query(`SELECT (id) FROM department WHERE name = ?`, response.department, (err, res) => {
+                if (err) {
+                    console.error(err);
+                } else {
+                    department_id = res[0].id;
+                }
+
+                db.query(`INSERT INTO roles SET ?`, {title: response.title, salary: response.salary, department_id: department_id}, (err, res) => {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                        console.table(response);
+                        console.log('New role successfully added!');
+                    }
+                    initialPrompt();
+                })
+            })
+        })
+}
