@@ -2,6 +2,7 @@
 const mysql = require('mysql2');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
+const { response } = require('express');
 
 // create connection with mysql
 const db = mysql.createConnection(
@@ -61,21 +62,21 @@ const initialPrompt = () =>
                 db.end();
                 break;
         }
-    });
+});
 
-    // View all departments functionality
-    const viewDepartments = () => db.query(`SELECT * FROM department`, (err, results) => {
-        if (err) {
-            console.error(err)
-        } else {
-            console.table(results)
-        }
-        initialPrompt();
-    });
+// View all departments functionality
+const viewDepartments = () => db.query(`SELECT * FROM department`, (err, results) => {
+    if (err) {
+        console.error(err)
+    } else {
+        console.table(results)
+    }
+    initialPrompt();
+});
 
-    // View all roles function
-    const viewRoles = () => db.query(
-        `
+// View all roles function
+const viewRoles = () => db.query(
+    `
         SELECT 
             roles.id,
             roles.title AS 'Title',
@@ -84,17 +85,17 @@ const initialPrompt = () =>
         FROM roles
         LEFT JOIN department ON roles.department_id = department.id
         `, (err, results) => {
-            if (err) {
-                console.error(err)
-            } else {
-                console.table(results)
-            }
-            initialPrompt();
-    });
-    
-    // View all employees function
-    const viewEmployees = () => db.query(
-        `
+    if (err) {
+        console.error(err)
+    } else {
+        console.table(results)
+    }
+    initialPrompt();
+});
+
+// View all employees function
+const viewEmployees = () => db.query(
+    `
         SELECT
             employee.id AS 'ID',
             employee.first_name AS 'First Name',
@@ -108,10 +109,32 @@ const initialPrompt = () =>
             LEFT JOIN department ON roles.department_id = department.id
             LEFT JOIN employee manager ON employee.manager_id = manager.id
         `, (err, results) => {
-            if (err) {
-                console.error(err);
-            } else {
-                console.table(results);
+    if (err) {
+        console.error(err);
+    } else {
+        console.table(results);
+    }
+    initialPrompt();
+});
+
+// Add a department function
+const addDepartment = () => {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                name: 'deptName',
+                message: 'What department do you want to add?',
             }
+        ])
+        .then((response) => {
+            db.query(`INSERT INTO department (name) VALUES (?)`, response.deptName, (err, res) => {
+                if (err) {
+                    console.error(err);
+                } else {
+                    console.log(`${response.deptName} was successfully added.`)
+                }
+            })
             initialPrompt();
-    });
+        })
+}
