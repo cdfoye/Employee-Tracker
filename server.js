@@ -137,7 +137,7 @@ const addDepartment = () => {
             })
             initialPrompt();
         })
-}
+};
 
 // Department array to get list of departments for adding a role
 let deptArray = [];
@@ -152,7 +152,7 @@ const departmentSelect = () => {
         }
     })
     return deptArray;
-}
+};
 
 // Add a role function
 const addRole = () => {
@@ -195,4 +195,97 @@ const addRole = () => {
                 })
             })
         })
-}
+};
+
+// Role array to get list of roles for adding an employee
+let roleArray = [];
+const roleSelect = () => {
+    db.query(`SELECT * FROM roles`, (err, res) => {
+        if (err) {
+            console.error(err);
+        }
+        // for loop to add new roles to the role array
+        for (let i = 0; res.length; i++) {
+            roleArray.push(res[i].title);
+        }
+    })
+    return roleArray;
+};
+
+// Manager array to get list of managers for adding an employee
+let managerArray = [];
+const managerSelect = () => {
+    db.query(`SELECT first_name, last_name FROM employee`, (err, res) => {
+        if (err) {
+            console.error(err);
+        }
+        // for loop to add new managers to the managers array
+        for (let i = 0; res.length; i++) {
+            managerArray.push(`${res[i].first_name} ${res[i].last_name}`);
+        }
+    })
+    return managerArray;
+};
+
+// Add an employee function
+const addEmployee = () => {
+    inquirer
+        .prompt([
+            {
+                type: 'input',
+                name: 'firstName',
+                message: 'Enter employees first name: '
+            },
+            {
+                type: 'input',
+                name: 'lastName',
+                message: 'Enter employees last name: '
+            },
+            {
+                type: 'list',
+                name: 'role',
+                message: 'What is the employees title?',
+                choices: roleSelect()
+            },
+            {
+                type: 'list',
+                name: 'manager',
+                message: 'Who is the employees manager?',
+                choices: managerSelect()
+            }
+        ]).then((response) => {
+            let roleID;
+            let managerID;
+            let managerName = response.manager.split(' ');
+
+            db.query(`SELECT (id) FROM roles WHERE title = ?`, response.role, (err, result) => {
+                if (err) {
+                    console.error(err);
+                } else {
+                    roleID = result[0].id
+                }
+
+                db.query(`SELECT (id) FROM employee WHERE first_name = ? AND last_name = ?`, [managerName[0], managerName[1]], (err, result) => {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                        managerID = result[0].id
+                        addtoTeam();
+                    }
+                })
+
+                const addtoTeam = () => {
+
+                    db.query(`INSERT INTO employee SET ?`, {first_name: response.firstName, last_name: response.lastName, role_id: roleID, manager_id: managerID}, (err, res) => {
+                        if (err) {
+                            console.error(err);
+                        } else {
+                            console.table(response);
+                            console.log('New role successfully added!');
+                        }
+                        initialPrompt();
+                    })
+                }
+            })
+        })
+};
