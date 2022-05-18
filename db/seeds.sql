@@ -11,8 +11,8 @@ VALUES ("HR Manager", 80000, 1),
        ("Social Media Specialist", 65000, 3);
 
 INSERT INTO employee (first_name, last_name, role_id, manager_id)
-VALUES ("Meridith", "Grey", 1,),
-       ("Darth", "Vader", 3),
-       ("Spongebob", "Squarepants", 4),
-       ("Patrick", "Star", 2);
+VALUES ("Meridith", "Grey", 1, NULL),
+       ("Darth", "Vader", 3, 1),
+       ("Spongebob", "Squarepants", 4, 2),
+       ("Patrick", "Star", 2, 3);
                                                                                                                                     
