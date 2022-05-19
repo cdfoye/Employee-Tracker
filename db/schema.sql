@@ -3,11 +3,13 @@ CREATE DATABASE tracker_db;
 
 USE tracker_db;
 
+-- department table
 CREATE TABLE department (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(30)
 );
 
+-- table of roles linked to department id
 CREATE TABLE roles (
     id INT AUTO_INCREMENT PRIMARY KEY,
     title VARCHAR(30),
@@ -18,6 +20,7 @@ CREATE TABLE roles (
     ON DELETE SET NULL
 );
 
+-- employee table connected to role id
 CREATE TABLE employee (
     id INT AUTO_INCREMENT PRIMARY KEY,
     first_name VARCHAR(30),
